@@ -18,11 +18,13 @@ Click the meditator in the bar, then **Break now** to try it. By default, **Esca
 
 ## Highlights
 
-- **A timer that fits your desktop.** Native theme colors, a compact bar countdown, and full-screen breaks.
-- **Your own rhythm.** Set work and break durations, pause when needed, or add five more minutes.
-- **A gentle heads-up.** A 15-second warning before your break, with optional postponement.
-- **Idle-aware breaks.** Time away can count as rest. Stay Awake and video inhibitors are respected by default.
-- **Optional authenticated locking — experimental.** Configure **Lock during breaks** to hand off to Omarchy’s lock screen before leaving your desk. Authentication is still required after the break ends. Suspend/resume and physical monitor changes have not been fully verified.
+- Shows the remaining time in the bar and uses your desktop theme.
+- Configurable work and break durations, with pause, reset, and +5 minute controls.
+- Optional 15-second warning before full-screen breaks.
+- Counts time away as rest, respecting Stay Awake and video inhibitors by default.
+- Optional **Lock during breaks** setting uses Omarchy’s lock screen so you can leave your desk. Wait for the lock screen before leaving; authentication is required to return, even after the break ends.
+
+Suspend/resume and physical monitor changes with session locking have not been fully verified.
 
 <details>
 <summary>See all settings</summary>
