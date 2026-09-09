@@ -22,7 +22,7 @@ Click the meditator in the bar, then **Break now** to try it. By default, **Esca
 - **Your own rhythm.** Set work and break durations, pause when needed, or add five more minutes.
 - **A gentle heads-up.** A 15-second warning before your break, with optional postponement.
 - **Idle-aware breaks.** Time away can count as rest. Stay Awake and video inhibitors are respected by default.
-- **Optional authenticated locking — experimental.** Configure **Lock during breaks** to hand off to Omarchy’s lock screen before leaving your desk. Authentication is still required after the break ends. Desktop compatibility testing is incomplete; see [known limitations](docs/development.md#lock-during-breaks).
+- **Optional authenticated locking — experimental.** Configure **Lock during breaks** to hand off to Omarchy’s lock screen before leaving your desk. Authentication is still required after the break ends. Suspend/resume and physical monitor changes have not been fully verified.
 
 To update, run `omarchy plugin update klaudworks.omadoro`, then `omarchy restart shell` to reload the timer. Settings are preserved.
 
@@ -34,4 +34,4 @@ omarchy plugin disable klaudworks.omadoro
 
 To uninstall: `omarchy plugin remove klaudworks.omadoro`.
 
-[Development and known limitations](docs/development.md) · [MIT license](LICENSE)
+[MIT license](LICENSE)
