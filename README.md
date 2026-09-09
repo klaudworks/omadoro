@@ -24,6 +24,15 @@ Click the meditator in the bar, then **Break now** to try it. By default, **Esca
 - **Idle-aware breaks.** Time away can count as rest. Stay Awake and video inhibitors are respected by default.
 - **Optional authenticated locking — experimental.** Configure **Lock during breaks** to hand off to Omarchy’s lock screen before leaving your desk. Authentication is still required after the break ends. Suspend/resume and physical monitor changes have not been fully verified.
 
+<details>
+<summary>See all settings</summary>
+
+<p align="center">
+  <a href="docs/screenshots/settings.png"><img src="docs/screenshots/settings.png" alt="Omadoro settings: work and break durations, idle threshold, skipping policy, autostart, session locking, Stay Awake and video protection, and break warnings" width="480"></a>
+</p>
+
+</details>
+
 To update, run `omarchy plugin update klaudworks.omadoro`, then `omarchy restart shell` to reload the timer. Settings are preserved.
 
 To disable:
