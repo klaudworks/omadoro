@@ -33,5 +33,3 @@ omarchy plugin disable klaudworks.omadoro
 ```
 
 To uninstall: `omarchy plugin remove klaudworks.omadoro`.
-
-[MIT license](LICENSE)
