@@ -15,7 +15,10 @@ Ui.BarWidget {
     implicitHeight: barSize
     Connections {
         target: root.service
-        function onViewChanged() { if (root.service.view.phase === "Breaking") root.close() }
+        function onViewChanged() {
+            if (root.service.view.phase === "Breaking") root.close()
+            else if (root.service.view.error) root.popupOpen = true
+        }
     }
     FontMetrics {
         id: labelMetrics

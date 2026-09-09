@@ -12,5 +12,5 @@ jobs:
           node-version: '22'
       - run: node tests/model.test.cjs
       - run: python -m unittest discover -s tests -p '*_test.py'
-      - run: python -m py_compile adapters/desktop.py scripts/*.py
+      - run: python -m py_compile adapters/*.py scripts/*.py
       # Omarchy validation, QML runtime, and compositor tests require the target desktop.

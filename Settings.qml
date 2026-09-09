@@ -99,35 +99,56 @@ Item {
             Ui.PanelSeparator { }
             Repeater {
                 model: [{ key: "autoStart", label: "Start timer on startup" },
+                    { key: "lockOnBreak", label: "Lock during breaks" },
+                    { key: "respectIdleInhibitors", label: "Respect Stay Awake and video" },
                     { key: "warningEnabled", label: "Warn 15 seconds before a break" },
                     { key: "warningPostponeEnabled", label: "Offer +5 min in the warning" }]
-                Ui.Button {
-                    id: toggleRow
+                Column {
+                    id: optionRow
                     required property var modelData
-                    readonly property bool checked: root.draft[modelData.key] === true
                     width: form.width
-                    focusable: true
-                    bordered: false
-                    implicitHeight: Style.space(44)
-                    onClicked: root.setValue(modelData.key, !checked)
-                    Label {
-                        anchors.left: parent.left
-                        anchors.right: toggleSwitch.left
-                        anchors.leftMargin: Style.spacing.rowPaddingX
-                        anchors.rightMargin: Style.spacing.rowPaddingX
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: toggleRow.modelData.label
-                        font.pixelSize: Style.font.body
-                        font.bold: false
-                        elide: Text.ElideRight
+                    spacing: Style.space(4)
+                    Ui.Button {
+                        id: toggleRow
+                        readonly property bool checked: root.draft[optionRow.modelData.key] === true
+                        width: form.width
+                        focusable: true
+                        bordered: false
+                        implicitHeight: Style.space(44)
+                        onClicked: root.setValue(optionRow.modelData.key, !checked)
+                        Label {
+                            anchors.left: parent.left
+                            anchors.right: toggleSwitch.left
+                            anchors.leftMargin: Style.spacing.rowPaddingX
+                            anchors.rightMargin: Style.spacing.rowPaddingX
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: optionRow.modelData.label
+                            font.pixelSize: Style.font.body
+                            font.bold: false
+                            elide: Text.ElideRight
+                        }
+                        Ui.ToggleSwitch {
+                            id: toggleSwitch
+                            anchors.right: parent.right
+                            anchors.rightMargin: Style.spacing.rowPaddingX
+                            anchors.verticalCenter: parent.verticalCenter
+                            checked: toggleRow.checked
+                            interactive: false
+                        }
                     }
-                    Ui.ToggleSwitch {
-                        id: toggleSwitch
-                        anchors.right: parent.right
-                        anchors.rightMargin: Style.spacing.rowPaddingX
-                        anchors.verticalCenter: parent.verticalCenter
-                        checked: toggleRow.checked
-                        interactive: false
+                    Label {
+                        width: parent.width - Style.spacing.rowPaddingX * 2
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        wrapMode: Text.Wrap
+                        font.pixelSize: Style.font.bodySmall
+                        visible: text !== ""
+                        text: optionRow.modelData.key === "lockOnBreak"
+                            ? "Use Omarchy’s lock screen for breaks. Authentication is required to return, even after the break ends."
+                            : optionRow.modelData.key === "respectIdleInhibitors"
+                                ? (root.draft.respectIdleInhibitors
+                                    ? "Stay Awake and video apps that prevent idle keep time counting as work. Scheduled breaks still happen."
+                                    : "Time without keyboard or mouse input counts as rest, even during videos or Stay Awake.")
+                                : ""
                     }
                 }
             }

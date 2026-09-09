@@ -63,7 +63,15 @@ TimerModel.prototype.prepare = function(manual) {
         token: ++this.sequence, ready: {}, due: this.time.mono + 5,
         duration: this.settings.breakSeconds, remaining: this.settings.breakSeconds,
         policy: this.settings.skipPolicy, wait: Math.min(this.settings.skipWaitSeconds, this.settings.breakSeconds),
-        elapsed: 0 };
+        elapsed: 0, lockOnBreak: this.settings.lockOnBreak === true, lockAttempted: false };
+};
+// The host owns the actual session lock and authentication. Request it once per
+// break, after all reminder surfaces are ready; never request an unlock.
+TimerModel.prototype.takeLockRequest = function() {
+    var b = this.breakState;
+    if (!b || b.stage !== "active" || !b.lockOnBreak || b.lockAttempted || !this.available()) return false;
+    b.lockAttempted = true;
+    return true;
 };
 TimerModel.prototype.reconcile = function(time, patch, deferEligibility) {
     if (this.disposed) return;
@@ -175,7 +183,8 @@ TimerModel.prototype.coverageLost = function(token, output) {
 TimerModel.prototype.configure = function(settings) {
     var old = this.settings;
     this.settings = Object.assign({}, settings);
-    if (old.idleThresholdSeconds !== settings.idleThresholdSeconds) {
+    if (old.idleThresholdSeconds !== settings.idleThresholdSeconds
+        || old.respectIdleInhibitors !== settings.respectIdleInhibitors) {
         this.rest = null; this.restBaseline = this.time.boot; this.inputs.idle = false;
     }
 

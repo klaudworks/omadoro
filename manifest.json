@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "klaudworks.omadoro",
   "name": "Omadoro",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "author": "klaudworks",
   "description": "Local work and break timer with themed desktop breaks",
   "kinds": ["service", "bar-widget", "overlay"],

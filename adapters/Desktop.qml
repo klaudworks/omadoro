@@ -7,6 +7,10 @@ Item {
     id: root
     property bool observing: false
     property int idleThreshold: 60
+    property bool respectIdleInhibitors: true
+    readonly property bool stayAwake: sample?.stayAwake !== false
+    readonly property bool idleEnabled: observing && (!respectIdleInhibitors || !stayAwake)
+    property bool resettingIdle: false
     property bool healthy: false
     property var sample: null
     property string error: ""
@@ -29,16 +33,19 @@ Item {
     function inputs(): var {
         return { outputs: outputs, available: healthy && sample?.locked !== null && sample?.logindHealthy === true,
             locked: sample?.locked === true, sleeping: sample?.sleeping === true,
-            idle: rawIdle, idleSince: idleSince }
+            idle: idleEnabled && rawIdle, idleSince: idleSince }
     }
     function resetIdle(): void {
         rawIdle = false
         observationBaseline = now().boot
         lastActivity = observationBaseline
-        idleMonitor.enabled = false
-        Qt.callLater(function() { idleMonitor.enabled = root.observing })
+        resettingIdle = true
+        Qt.callLater(function() { root.resettingIdle = false })
+        changed()
     }
     onIdleThresholdChanged: resetIdle()
+    onRespectIdleInhibitorsChanged: resetIdle()
+    onIdleEnabledChanged: resetIdle()
     onOutputsChanged: changed()
     onObservingChanged: {
         if (observing) {
@@ -50,11 +57,11 @@ Item {
     ElapsedTimer { id: elapsed }
     IdleMonitor {
         id: idleMonitor
-        enabled: root.observing
+        enabled: root.idleEnabled && !root.resettingIdle
         timeout: root.idleThreshold
-        respectInhibitors: false
+        respectInhibitors: root.respectIdleInhibitors
         onIsIdleChanged: {
-            if (!root.observing || !root.sample) return
+            if (!root.idleEnabled || root.resettingIdle || !root.sample) return
             root.rawIdle = isIdle
             if (isIdle) root.idleSince = Math.max(root.observationBaseline, root.lastActivity, root.now().boot - root.idleThreshold)
             else root.lastActivity = root.now().boot

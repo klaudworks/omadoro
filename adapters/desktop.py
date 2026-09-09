@@ -78,7 +78,8 @@ def main():
             last_locked = None
         now_mono = time.monotonic_ns()
         now_boot = time.clock_gettime_ns(time.CLOCK_BOOTTIME)
-        packet = dict(state, event=event, sequence=sequence, locked=locked,
+        stay_awake = os.path.isfile(os.path.expanduser("~/.local/state/omarchy/indicators/stay-awake"))
+        packet = dict(state, event=event, sequence=sequence, locked=locked, stayAwake=stay_awake,
                       monoMs=now_mono / 1_000_000, bootMs=now_boot / 1_000_000,
                       runElapsedMs=(now_mono - start_mono) / 1_000_000,
                       restElapsedMs=(now_boot - start_boot) / 1_000_000,

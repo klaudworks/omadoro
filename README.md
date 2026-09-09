@@ -8,19 +8,21 @@ A small work/break timer for Omarchy's built-in Quickshell bar. Work for **50 mi
 
 ## Quickstart
 
-Prototype for **Omarchy 4's built-in Quickshell shell**, currently running on **4.0.3**. Requires `git`, `python`, `python-dbus`, and `python-gobject`. The classic Waybar setup isn't supported.
+For **Omarchy 4’s built-in bar**. Older Waybar setups aren’t supported.
 
 ```sh
 omarchy plugin add https://github.com/klaudworks/omadoro.git --enable
 ```
 
-The timer starts automatically. Click the meditator in the bar, then **Break now** to try it; **Escape** or **Skip** returns you to work with the default settings.
+Click the meditator in the bar, then **Break now** to try it. By default, **Escape** or **Skip** returns you to work.
 
-## Make it yours
+## Highlights
 
-- **Pause / Resume** controls the work timer. **+5 min** postpones a break; **Reset timer** restores a full work interval.
-- **Settings** lets you change durations, idle detection, autostart, the 15-second warning, and whether breaks can be skipped immediately, after a wait, or never. Changes save automatically.
-- Breaks cover your screens. A long enough idle period counts as a break. Normal desktop locking remains enabled. Only preferences persist; restarting the shell starts a fresh timer.
+- **A timer that fits your desktop.** Native theme colors, a compact bar countdown, and full-screen breaks.
+- **Your own rhythm.** Set work and break durations, pause when needed, or add five more minutes.
+- **A gentle heads-up.** A 15-second warning before your break, with optional postponement.
+- **Idle-aware breaks.** Time away can count as rest. Stay Awake and video inhibitors are respected by default.
+- **Optional authenticated locking — experimental.** Configure **Lock during breaks** to hand off to Omarchy’s lock screen before leaving your desk. Authentication is still required after the break ends. Desktop compatibility testing is incomplete; see [known limitations](docs/development.md#lock-during-breaks).
 
 To update, run `omarchy plugin update klaudworks.omadoro`, then `omarchy restart shell` to reload the timer. Settings are preserved.
 

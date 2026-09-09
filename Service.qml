@@ -19,6 +19,7 @@ Item {
     property bool reconciling: false
     property bool destroying: false
     property var pendingSave: null
+    property bool locking: false
     readonly property var entry: {
         const layout = shell?.barConfig?.layout
         if (layout) for (const section of ["left", "center", "right"])
@@ -42,7 +43,21 @@ Item {
         model = TimerModel.create(saved, desktop.now(), desktop.inputs())
         publish()
     }
-    function publish(): void { if (model) view = model.snapshot() }
+    function publish(): void {
+        if (!model) return
+        view = model.snapshot()
+        if (!destroying && !locking && !sessionLocker.running && model.takeLockRequest()) {
+            locking = true
+            lockWatchdog.restart()
+            sessionLocker.running = true
+        }
+    }
+    function lockFailed(): void {
+        locking = false
+        lockWatchdog.stop()
+        if (model) model.fail("Could not confirm locking. Lock the desktop manually before leaving.")
+        publish()
+    }
     function reconcile(deferEligibility): void {
         if (destroying || reconciling) return
         initialize()
@@ -53,6 +68,7 @@ Item {
         reconciling = false
     }
     function command(name: string): var {
+        if (locking) return { status: "rejected", reason: "Waiting for the session lock" }
         reconcile(true)
         if (!model) return { status: "rejected", reason: "Desktop service initializing" }
         const result = model.command(name)
@@ -92,10 +108,34 @@ Item {
         id: desktop
         observing: root.shell !== null && root.manifest !== null
         idleThreshold: root.saved.idleThresholdSeconds
+        respectIdleInhibitors: root.saved.respectIdleInhibitors
         onChanged: root.reconcile()
         onLost: reason => {
             if (root.model) root.model.fail(reason)
             root.publish()
+        }
+    }
+    Process {
+        id: sessionLocker
+        command: ["python", decodeURIComponent(Qt.resolvedUrl("adapters/lock.py").toString().replace(/^file:\/\//, ""))]
+        stdout: StdioCollector { id: lockResult }
+        stderr: StdioCollector { }
+        onExited: exitCode => {
+            if (root.destroying) return
+            if (exitCode !== 0 || lockResult.text.trim() !== "secure") root.lockFailed()
+            else {
+                root.locking = false
+                lockWatchdog.stop()
+                root.reconcile()
+            }
+        }
+    }
+    Timer {
+        id: lockWatchdog
+        interval: 15000
+        onTriggered: {
+            sessionLocker.running = false
+            root.lockFailed()
         }
     }
     FileView {
@@ -126,7 +166,7 @@ Item {
     Timer { id: verifySave; interval: 500; onTriggered: diskConfig.reload() }
     IpcHandler {
         target: "omadoro"
-        function status(): string { root.reconcile(); return JSON.stringify(root.view) }
+        function status(): string { root.reconcile(); return JSON.stringify(Object.assign({}, root.view, { locking: root.locking })) }
         function action(name: string): string { return JSON.stringify(root.command(name)) }
         function settings(): string { return JSON.stringify(root.saved) }
         function configure(json: string): string {

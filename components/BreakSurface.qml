@@ -56,18 +56,19 @@ PanelWindow {
             anchors.centerIn: parent
             spacing: Style.space(22)
             Label { anchors.horizontalCenter: parent.horizontalCenter; text: "󱅻"; font.pixelSize: Style.font.displayLarge * 2 }
-            Label { anchors.horizontalCenter: parent.horizontalCenter; text: "Take a moment. Let your eyes rest."; font.pixelSize: Style.font.subtitle }
+            Label { anchors.horizontalCenter: parent.horizontalCenter; text: surface.service?.locking ? "Locking desktop…" : "Take a moment. Let your eyes rest."; font.pixelSize: Style.font.subtitle }
             Label { anchors.horizontalCenter: parent.horizontalCenter; text: surface.service?.view.preparing ? "Preparing…" : surface.service?.view.label ?? ""; font.pixelSize: Style.font.displayLarge * 2 }
             Label {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: surface.service?.view.skipPolicy === "never" ? "Your desktop returns when the break ends."
+                text: surface.service?.locking ? "Wait for Omarchy’s lock screen before leaving."
+                    : surface.service?.view.skipPolicy === "never" ? "Your desktop returns when the break ends."
                     : surface.service?.view.canSkip ? "Escape or Skip to return"
                     : "Skipping available in " + (surface.service?.view.skipLabel ?? "")
             }
             Ui.Button {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: "Skip"; focusable: true; bordered: true
-                visible: surface.service?.view.canSkip ?? false
+                visible: (surface.service?.view.canSkip ?? false) && !surface.service?.locking
                 onClicked: surface.service?.command("skip")
             }
         }

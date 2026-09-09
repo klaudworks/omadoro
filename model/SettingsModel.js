@@ -2,7 +2,7 @@
 var defaults = {
     workMinutes: 50, breakSeconds: 300, skipPolicy: "allow", skipWaitSeconds: 15,
     autoStart: true, idleThresholdSeconds: 60, warningEnabled: true,
-    warningPostponeEnabled: true
+    warningPostponeEnabled: true, lockOnBreak: false, respectIdleInhibitors: true
 };
 var bounds = { workMinutes: [1, 1440], breakSeconds: [1, 3600],
     skipWaitSeconds: [1, 3600], idleThresholdSeconds: [1, 3600] };

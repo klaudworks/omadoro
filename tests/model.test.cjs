@@ -222,3 +222,67 @@ test('Break minutes convert to whole seconds without floating-point rejection', 
     for (const input of ['', '1e2', '0.001', 'oops', 'Infinity']) assert.ok(Number.isNaN(S.minutesToSeconds(input)));
     assert.equal(S.validate(settings({ breakSeconds: S.minutesToSeconds('61') })).ok, false);
 });
+
+test('session lock is opt-in and requested only after every break surface is ready', () => {
+    const normal = make(); breakNow(normal);
+    assert.equal(normal.takeLockRequest(), false);
+    const m = make({ lockOnBreak: true }, { outputs: ['a', 'b'] });
+    m.command('break');
+    assert.equal(m.takeLockRequest(), false);
+    ready(m, 'a'); assert.equal(m.takeLockRequest(), false);
+    ready(m, 'b'); assert.equal(m.takeLockRequest(), true);
+    assert.equal(m.takeLockRequest(), false);
+});
+
+test('unlocking early and output changes do not repeatedly lock the user', () => {
+    const m = make({ lockOnBreak: true }); breakNow(m);
+    assert.equal(m.takeLockRequest(), true);
+    tick(m, 1, { locked: true }); tick(m, 1, { locked: false }); ready(m);
+    assert.equal(m.takeLockRequest(), false);
+    tick(m, 0, { outputs: ['a', 'b'] }); ready(m, 'b');
+    assert.equal(m.takeLockRequest(), false);
+});
+
+test('lock preference is snapshotted per break and applies again on the next break', () => {
+    const m = make({ lockOnBreak: true }); m.command('break');
+    m.configure(settings({ lockOnBreak: false })); ready(m);
+    assert.equal(m.takeLockRequest(), true);
+    m.command('skip'); breakNow(m);
+    assert.equal(m.takeLockRequest(), false);
+    m.command('skip'); m.configure(settings({ lockOnBreak: true })); breakNow(m);
+    assert.equal(m.takeLockRequest(), true);
+});
+
+test('finishing or disabling a break never clears the desktop lock', () => {
+    const m = make({ lockOnBreak: true, breakSeconds: 5 }); breakNow(m);
+    assert.equal(m.takeLockRequest(), true);
+    tick(m, 0, { locked: true }); tick(m, 10);
+    assert.equal(m.inputs.locked, true);
+    assert.equal(m.command('skip').status, 'rejected');
+    assert.equal(m.snapshot().breakVisible, false);
+    assert.equal(m.takeLockRequest(), false);
+    m.command('disable');
+    assert.equal(m.inputs.locked, true);
+});
+
+test('existing preferences adopt inhibitor protection and keep session locking opt-in', () => {
+    const old = Object.assign({}, S.defaults);
+    delete old.respectIdleInhibitors; delete old.lockOnBreak;
+    const result = S.normalize(old);
+    assert.equal(result.value.respectIdleInhibitors, true);
+    assert.equal(result.value.lockOnBreak, false);
+    assert.equal(result.issue, '');
+    assert.equal(S.validate(settings({ respectIdleInhibitors: 'false' })).ok, false);
+});
+
+test('changing idle inhibitor policy discards previous rest credit', () => {
+    const m = make({ breakSeconds: 120 });
+    tick(m, 60, { idle: true, idleSince: 0 });
+    m.configure(settings({ breakSeconds: 120, respectIdleInhibitors: false }));
+    assert.equal(m.rest, null);
+    tick(m, 1, { idle: false });
+    assert.ok(m.work < 3000);
+    tick(m, 60, { idle: true, idleSince: 61 });
+    tick(m, 61); tick(m, 0, { idle: false });
+    assert.equal(m.work, 3000);
+});
