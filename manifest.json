@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "klaudworks.omadoro",
+  "name": "Omadoro",
+  "version": "0.1.1",
+  "author": "klaudworks",
+  "description": "Local work and break timer with themed desktop breaks",
+  "kinds": ["service", "bar-widget", "overlay"],
+  "keepLoaded": true,
+  "entryPoints": { "service": "Service.qml", "barWidget": "BarWidget.qml", "overlay": "BreakOverlay.qml" },
+  "barWidget": { "displayName": "Omadoro", "category": "Time", "allowMultiple": false, "defaultSection": "right" }
+}
