@@ -91,7 +91,9 @@ Item {
         if (!checked.ok) return checked
         if (!entry || !shell) return { ok: false, error: "Settings service unavailable" }
         const merged = SettingsModel.merge(entry, checked.value)
-        if (JSON.stringify(checked.value) === JSON.stringify(saved) && !settingsIssue
+        // A pending write may differ from saved. Reverting to the last confirmed
+        // value still needs a write and a new verification in that case.
+        if (!pendingSave && JSON.stringify(checked.value) === JSON.stringify(saved) && !settingsIssue
             && entry.meetingDetectionEnabled === undefined && entry.meetingGraceSeconds === undefined) {
             saveStatus = "No changes"
             return { ok: true, value: saved }
