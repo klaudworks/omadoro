@@ -10,6 +10,8 @@ A small work/break timer for Omarchy's built-in Quickshell bar. Work for **50 mi
 
 For **Omarchy 4’s built-in bar**. Older Waybar setups aren’t supported.
 
+Requires Omarchy's Quickshell environment and the `python`, `python-dbus`, and `python-gobject` packages. Optional session locking uses `omarchy system lock` and `omarchy-shell`.
+
 ```sh
 omarchy plugin add https://github.com/klaudworks/omadoro.git --enable
 ```
