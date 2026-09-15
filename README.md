@@ -46,3 +46,9 @@ omarchy plugin disable klaudworks.omadoro
 ```
 
 To uninstall: `omarchy plugin remove klaudworks.omadoro`.
+
+## Local development installer
+
+`python scripts/install-local.py` installs a separate checkout into `~/.config/omarchy/plugins/klaudworks.omadoro`. It requires user-owned destination directories that are not writable by other users and rejects symlinks and special files in the existing plugin and copied source trees.
+
+The installer validates a fresh, private staging copy before disabling the old plugin, then uses Linux `renameat2` to exchange the directories atomically. It enables the plugin, restores saved settings and bar placement through Omarchy's APIs, and restarts the shell. Failed activation rolls back the files and attempts to restore the previous desktop state. Successful updates retain the previous plugin and saved settings in the printed private recovery directory beside the installation. If rollback fails, recovery files are retained there for manual recovery. The standard installation command above does not run this development helper.
