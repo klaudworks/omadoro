@@ -21,6 +21,17 @@ Item {
     property real idleSince: 0
     property real observationBaseline: 0
     property real lastActivity: 0
+    readonly property string pythonExecutable: "/usr/bin/python3"
+    readonly property var helperEnvironment: ({
+        PATH: "/usr/bin:/bin",
+        HOME: Quickshell.env("HOME"),
+        XDG_RUNTIME_DIR: Quickshell.env("XDG_RUNTIME_DIR"),
+        WAYLAND_DISPLAY: Quickshell.env("WAYLAND_DISPLAY"),
+        HYPRLAND_INSTANCE_SIGNATURE: Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE"),
+        OMARCHY_PATH: Quickshell.env("OMARCHY_PATH"),
+        DBUS_SESSION_BUS_ADDRESS: Quickshell.env("DBUS_SESSION_BUS_ADDRESS"),
+        DBUS_SYSTEM_BUS_ADDRESS: Quickshell.env("DBUS_SYSTEM_BUS_ADDRESS")
+    })
     readonly property var outputs: Quickshell.screens.map(s => s.name)
     signal changed()
     signal lost(string reason)
@@ -70,7 +81,9 @@ Item {
     }
     Process {
         id: helper
-        command: ["python", decodeURIComponent(Qt.resolvedUrl("desktop.py").toString().replace(/^file:\/\//, ""))]
+        command: [root.pythonExecutable, decodeURIComponent(Qt.resolvedUrl("desktop.py").toString().replace(/^file:\/\//, ""))]
+        clearEnvironment: true
+        environment: root.helperEnvironment
         running: root.observing
         stdinEnabled: true
         stdout: SplitParser {
