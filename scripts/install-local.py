@@ -13,10 +13,29 @@ import time
 ROOT = Path(__file__).resolve().parents[1]
 PLUGIN = "klaudworks.omadoro"
 TARGET = Path.home() / ".config/omarchy/plugins" / PLUGIN
+PYTHON = "/usr/bin/python3"
+OMARCHY = "/usr/bin/omarchy"
+OMARCHY_SHELL = "/usr/bin/omarchy-shell"
+TRUSTED_PATH = "/usr/bin:/bin"
+INHERITED_ENVIRONMENT = (
+    "HOME", "XDG_RUNTIME_DIR", "WAYLAND_DISPLAY", "HYPRLAND_INSTANCE_SIGNATURE",
+    "OMARCHY_PATH", "DBUS_SESSION_BUS_ADDRESS", "DBUS_SYSTEM_BUS_ADDRESS"
+)
+
+
+def clean_environment():
+    """Keep only session values required by the trusted Omarchy helpers."""
+    environment = {"PATH": TRUSTED_PATH}
+    for name in INHERITED_ENVIRONMENT:
+        value = os.environ.get(name)
+        if value:
+            environment[name] = value
+    return environment
 
 
 def run(*args):
-    return subprocess.run(args, check=True, capture_output=True, text=True).stdout.strip()
+    return subprocess.run(args, check=True, capture_output=True, text=True,
+                          env=clean_environment()).stdout.strip()
 
 
 def check_tree(path):
@@ -61,36 +80,33 @@ def exchange(left, right):
 
 
 def activate(saved, placement):
-    run("omarchy-shell", "shell", "rescanPlugins")
+    run(OMARCHY_SHELL, "shell", "rescanPlugins")
     for _ in range(30):
-        discovered = run("omarchy-shell", "shell", "listPlugins")
+        discovered = run(OMARCHY_SHELL, "shell", "listPlugins")
         if PLUGIN in discovered:
             break
         time.sleep(.2)
     else:
         raise RuntimeError("Plugin copied, but discovery timed out")
-    result = run("omarchy-shell", "shell", "enablePlugin", PLUGIN, "{}")
+    result = run(OMARCHY_SHELL, "shell", "enablePlugin", PLUGIN, "{}")
     if result not in ("ok", "true", ""):
         raise RuntimeError("Enable failed: " + result)
     for key, value in saved.items():
         if key == "id":
             continue
-        result = run("omarchy-shell", "shell", "setBarWidget", PLUGIN, key, json.dumps(value), "{}")
+        result = run(OMARCHY_SHELL, "shell", "setBarWidget", PLUGIN, key, json.dumps(value), "{}")
         if result not in ("ok", "true", ""):
             raise RuntimeError("Could not restore setting " + key + ": " + result)
     if placement:
-        run("omarchy", "bar", "move", PLUGIN, "--section", placement[0], "--index", str(placement[1]))
-    run("omarchy", "restart", "shell")
+        run(OMARCHY, "bar", "move", PLUGIN, "--section", placement[0], "--index", str(placement[1]))
+    run(OMARCHY, "restart", "shell")
 
 
 def main():
-    for executable in ("omarchy", "omarchy-shell", "python"):
-        if not shutil.which(executable):
-            raise RuntimeError("Required command not found: " + executable)
-    run("python", "-c", "import dbus, gi; gi.require_version('GLibUnix', '2.0'); from gi.repository import GLib, GLibUnix")
+    run(PYTHON, "-c", "import dbus, gi; gi.require_version('GLibUnix', '2.0'); from gi.repository import GLib, GLibUnix")
     if ROOT == TARGET.resolve():
         raise RuntimeError("Run the installer from a separate checkout, outside the installed plugin directory")
-    run("omarchy", "plugin", "validate", str(ROOT))
+    run(OMARCHY, "plugin", "validate", str(ROOT))
     config_path = Path.home() / ".config/omarchy/shell.json"
     config = json.loads(config_path.read_text()) if config_path.exists() else {}
     saved = next((entry for section in ["left", "center", "right"]
@@ -123,12 +139,12 @@ def main():
             else:
                 shutil.copy2(source, staged / name, follow_symlinks=False)
         check_tree(staged)
-        run("omarchy", "plugin", "validate", str(staged))
+        run(OMARCHY, "plugin", "validate", str(staged))
         (holder / "saved-entry.json").write_text(json.dumps(saved, indent=2))
         if updating:
             check_tree(TARGET)
             disabled = True
-            run("omarchy", "plugin", "disable", PLUGIN)
+            run(OMARCHY, "plugin", "disable", PLUGIN)
             exchange(staged, TARGET)
         else:
             staged.rename(TARGET)
@@ -154,9 +170,9 @@ def main():
                 if updating and placement:
                     activate(saved, placement)
                 else:
-                    run("omarchy", "plugin", "disable", PLUGIN)
-                    run("omarchy-shell", "shell", "rescanPlugins")
-                    run("omarchy", "restart", "shell")
+                    run(OMARCHY, "plugin", "disable", PLUGIN)
+                    run(OMARCHY_SHELL, "shell", "rescanPlugins")
+                    run(OMARCHY, "restart", "shell")
             except Exception as recovery_error:
                 keep_backup = True
                 raise RuntimeError("Artifact restored, but desktop recovery failed; settings retained at " + str(holder)) from recovery_error

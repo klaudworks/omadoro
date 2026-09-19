@@ -26,7 +26,6 @@ class InstallTests(unittest.TestCase):
         self.calls = []
         for mocker in (patch.object(Path, "home", return_value=self.home),
                        patch.object(installer, "TARGET", self.target),
-                       patch.object(installer.shutil, "which", return_value="/mock/bin"),
                        patch.object(installer, "run", side_effect=self.run_command)):
             mocker.start()
             self.addCleanup(mocker.stop)
@@ -41,12 +40,29 @@ class InstallTests(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()):
             installer.main()
 
+    def test_clean_environment_drops_startup_and_path_injection_variables(self):
+        with patch.dict(os.environ, {
+            "PATH": "/tmp/attacker/bin",
+            "PYTHONPATH": "/tmp/attacker/python",
+            "PYTHONHOME": "/tmp/attacker/home",
+            "BASH_ENV": "/tmp/attacker/bashrc",
+            "HOME": str(self.home),
+            "OMARCHY_PATH": "/usr/share/omarchy"
+        }, clear=True):
+            environment = installer.clean_environment()
+        self.assertEqual(environment["PATH"], installer.TRUSTED_PATH)
+        self.assertEqual(environment["HOME"], str(self.home))
+        self.assertEqual(environment["OMARCHY_PATH"], "/usr/share/omarchy")
+        self.assertNotIn("PYTHONPATH", environment)
+        self.assertNotIn("PYTHONHOME", environment)
+        self.assertNotIn("BASH_ENV", environment)
+
     def test_fresh_install_without_user_config(self):
         self.install()
         self.assertTrue((self.target / "LICENSE").is_file())
         self.assertTrue((self.target / "adapters/desktop.py").is_file())
         self.assertFalse((self.target / "tests").exists())
-        self.assertIn(("omarchy", "restart", "shell"), self.calls)
+        self.assertIn((installer.OMARCHY, "restart", "shell"), self.calls)
         self.assertFalse(any("disable" in call for call in self.calls))
 
     def test_update_preserves_settings_placement_and_backup(self):
@@ -62,10 +78,10 @@ class InstallTests(unittest.TestCase):
         self.assertEqual((backup / 'plugin/old.txt').read_text(), 'old artifact')
         self.assertEqual(json.loads((backup / 'saved-entry.json').read_text()), saved)
         self.assertFalse((self.target / 'old.txt').exists())
-        self.assertIn(("omarchy-shell", "shell", "setBarWidget", installer.PLUGIN, "workMinutes", "42", "{}"), self.calls)
-        self.assertIn(("omarchy-shell", "shell", "setBarWidget", installer.PLUGIN, "futureSetting", '"keep"', "{}"), self.calls)
+        self.assertIn((installer.OMARCHY_SHELL, "shell", "setBarWidget", installer.PLUGIN, "workMinutes", "42", "{}"), self.calls)
+        self.assertIn((installer.OMARCHY_SHELL, "shell", "setBarWidget", installer.PLUGIN, "futureSetting", '"keep"', "{}"), self.calls)
         self.assertFalse(any("meetingGraceSeconds" in call for call in self.calls))
-        self.assertIn(("omarchy", "bar", "move", installer.PLUGIN, "--section", "left", "--index", "1"), self.calls)
+        self.assertIn((installer.OMARCHY, "bar", "move", installer.PLUGIN, "--section", "left", "--index", "1"), self.calls)
 
     def test_missing_runtime_dependency_does_not_write_plugin(self):
         with patch.object(installer, "run", side_effect=subprocess.CalledProcessError(1, "python")):
@@ -152,9 +168,9 @@ class InstallTests(unittest.TestCase):
                 self.install()
         self.assertEqual((self.target / 'old.txt').read_text(), 'old artifact')
         self.assertFalse((self.target / 'Service.qml').exists())
-        self.assertIn(('omarchy-shell', 'shell', 'setBarWidget', installer.PLUGIN,
+        self.assertIn((installer.OMARCHY_SHELL, 'shell', 'setBarWidget', installer.PLUGIN,
                        'meetingGraceSeconds', '5', '{}'), self.calls)
-        self.assertIn(('omarchy', 'bar', 'move', installer.PLUGIN, '--section', 'left', '--index', '0'), self.calls)
+        self.assertIn((installer.OMARCHY, 'bar', 'move', installer.PLUGIN, '--section', 'left', '--index', '0'), self.calls)
         self.assertEqual(list(self.target.parent.glob('.omadoro-install-*')), [])
 
     def test_failed_fresh_install_removes_artifact(self):
