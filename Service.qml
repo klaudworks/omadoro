@@ -20,6 +20,17 @@ Item {
     property bool destroying: false
     property var pendingSave: null
     property bool locking: false
+    readonly property string pythonExecutable: "/usr/bin/python3"
+    readonly property var helperEnvironment: ({
+        PATH: "/usr/bin:/bin",
+        HOME: Quickshell.env("HOME"),
+        XDG_RUNTIME_DIR: Quickshell.env("XDG_RUNTIME_DIR"),
+        WAYLAND_DISPLAY: Quickshell.env("WAYLAND_DISPLAY"),
+        HYPRLAND_INSTANCE_SIGNATURE: Quickshell.env("HYPRLAND_INSTANCE_SIGNATURE"),
+        OMARCHY_PATH: Quickshell.env("OMARCHY_PATH"),
+        DBUS_SESSION_BUS_ADDRESS: Quickshell.env("DBUS_SESSION_BUS_ADDRESS"),
+        DBUS_SYSTEM_BUS_ADDRESS: Quickshell.env("DBUS_SYSTEM_BUS_ADDRESS")
+    })
     readonly property var entry: {
         const layout = shell?.barConfig?.layout
         if (layout) for (const section of ["left", "center", "right"])
@@ -119,7 +130,9 @@ Item {
     }
     Process {
         id: sessionLocker
-        command: ["python", decodeURIComponent(Qt.resolvedUrl("adapters/lock.py").toString().replace(/^file:\/\//, ""))]
+        command: [root.pythonExecutable, decodeURIComponent(Qt.resolvedUrl("adapters/lock.py").toString().replace(/^file:\/\//, ""))]
+        clearEnvironment: true
+        environment: root.helperEnvironment
         stdout: StdioCollector { id: lockResult }
         stderr: StdioCollector { }
         onExited: exitCode => {

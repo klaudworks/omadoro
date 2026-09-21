@@ -1,11 +1,19 @@
 """Run the read-only desktop adapter check in the active Hyprland session."""
 import json
+import os
 from pathlib import Path
 import select
 import subprocess
 
 helper = Path(__file__).resolve().parents[1] / "adapters/desktop.py"
-process = subprocess.Popen(["python", str(helper)], stdin=subprocess.PIPE,
+environment = {"PATH": "/usr/bin:/bin"}
+for name in ("HOME", "XDG_RUNTIME_DIR", "WAYLAND_DISPLAY", "HYPRLAND_INSTANCE_SIGNATURE",
+             "OMARCHY_PATH", "DBUS_SESSION_BUS_ADDRESS", "DBUS_SYSTEM_BUS_ADDRESS"):
+    value = os.environ.get(name)
+    if value:
+        environment[name] = value
+process = subprocess.Popen(["/usr/bin/python3", str(helper)], env=environment,
+                           stdin=subprocess.PIPE,
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 try:
     samples = []

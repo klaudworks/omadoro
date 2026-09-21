@@ -12,13 +12,27 @@ spec.loader.exec_module(adapter)
 
 
 class LockTests(unittest.TestCase):
+    def test_clean_environment_uses_only_trusted_path_and_session_values(self):
+        with patch.dict(adapter.os.environ, {
+            'PATH': '/tmp/attacker/bin',
+            'PYTHONPATH': '/tmp/attacker/python',
+            'HOME': '/home/tester',
+            'OMARCHY_PATH': '/usr/share/omarchy'
+        }, clear=True):
+            environment = adapter.clean_environment()
+        self.assertEqual(environment, {
+            'PATH': adapter.TRUSTED_PATH,
+            'HOME': '/home/tester',
+            'OMARCHY_PATH': '/usr/share/omarchy'
+        })
+
     def test_waits_for_compositor_confirmation_not_request_acceptance(self):
         with patch.object(adapter, 'run', side_effect=['', json.dumps({'locked': True, 'secure': False}),
                                                      json.dumps({'secure': True})]) as run, \
                 patch.object(adapter.time, 'sleep'):
             adapter.lock_session()
-        self.assertEqual(run.call_args_list[0].args, ('omarchy', 'system', 'lock'))
-        self.assertEqual([call.args for call in run.call_args_list[1:]], [('omarchy-shell', 'lock', 'status')] * 2)
+        self.assertEqual(run.call_args_list[0].args, (adapter.OMARCHY, 'system', 'lock'))
+        self.assertEqual([call.args for call in run.call_args_list[1:]], [(adapter.OMARCHY_SHELL, 'lock', 'status')] * 2)
 
     def test_request_without_confirmation_times_out(self):
         with patch.object(adapter, 'run', side_effect=['', '{"locked":true,"secure":false}']), \
