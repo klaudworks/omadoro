@@ -52,12 +52,12 @@ Item {
                     id: content
                     anchors.centerIn: parent
                     spacing: Style.space(10)
-                    Label { anchors.horizontalCenter: parent.horizontalCenter; text: "A moment to rest in"; font.pixelSize: Style.font.subtitle }
+                    Label { anchors.horizontalCenter: parent.horizontalCenter; text: "Break starts in"; font.pixelSize: Style.font.subtitle }
                     Label { anchors.horizontalCenter: parent.horizontalCenter; text: root.service?.view.warningLabel ?? ""; font.pixelSize: Style.font.displayLarge * 2 }
                     Label {
                         anchors.horizontalCenter: parent.horizontalCenter
                         visible: !postponeButton.visible
-                        text: "More time? Open Omadoro in the bar."
+                        text: "To postpone, open Omadoro in the bar."
                     }
                     Ui.Button {
                         id: postponeButton

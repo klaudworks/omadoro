@@ -27,7 +27,7 @@ Item {
             title: "Omadoro"
             meta: root.service?.view.status ?? "Initializing…"
             iconComponent: Label {
-                text: "󱅻"
+                text: "󱎫"
                 font.pixelSize: Style.font.display * 1.25
             }
             trailingControl: Label {

@@ -1,10 +1,8 @@
 # Omadoro
 
-A small work/break timer for Omarchy's built-in Quickshell bar. Work for **50 minutes**, take a **5-minute break**, and repeat. Uses your desktop theme and pauses work while you're idle.
+A Pomodoro timer that **blocks your screen when it’s time for a break**. Work for **50 minutes**, take a **5-minute break**, and repeat. Full-screen breaks cover every monitor and block keyboard and mouse input to your apps. Uses your desktop theme and pauses work while you're idle.
 
-| Timer | Break warning | Screen break |
-| :---: | :---: | :---: |
-| [<img src="docs/screenshots/timer.png" alt="Bar timer with Pause, Break now, and Settings" width="260">](docs/screenshots/timer.png) | [<img src="docs/screenshots/warning.png" alt="12-second break warning with a +5 min button" width="260">](docs/screenshots/warning.png) | [<img src="docs/screenshots/break.png" alt="Full-screen five-minute break with delayed skipping" width="260">](docs/screenshots/break.png) |
+[<img src="preview.png" alt="Time for a break: screen blocked, with a countdown and delayed skipping" width="720">](docs/screenshots/break.png)
 
 ## Quickstart
 
@@ -16,10 +14,11 @@ Requires Omarchy's Quickshell environment and the `python`, `python-dbus`, and `
 omarchy plugin add https://github.com/klaudworks/omadoro.git --enable
 ```
 
-Click the meditator in the bar, then **Break now** to try it. By default, **Escape** or **Skip** returns you to work.
+Click the timer icon in the bar, then **Break now** to try it. By default, **Escape** or **Skip break** returns you to work. Choose delayed skipping or disable skipping in Settings to enforce the full break.
 
 ## Highlights
 
+- Full-screen breaks block your apps on every monitor, with immediate, delayed, or disabled skipping.
 - Shows the remaining time in the bar and uses your desktop theme.
 - Configurable work and break durations, with pause, reset, and +5 minute controls.
 - Optional 15-second warning before full-screen breaks.

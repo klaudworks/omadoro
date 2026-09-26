@@ -29,7 +29,7 @@ Ui.BarWidget {
         anchors.centerIn: parent
         Ui.BarIconButton {
             bar: root.bar
-            text: "󱅻"
+            text: "󱎫"
             fontSize: Style.bar.iconFont * 1.25
             onPressed: button => { if (button === Qt.LeftButton) root.popupOpen = !root.popupOpen }
         }
